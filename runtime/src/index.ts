@@ -59,6 +59,8 @@ export class FoilDeck {
   private slideIndex: number = 0;
   private stepIndex: number = 0;
   private mounted: boolean = false;
+  private resizeHandler: (() => void) | null = null;
+  private keydownHandler: ((event: KeyboardEvent) => void) | null = null;
 
   constructor(
     manifest: DeckManifest,
@@ -103,6 +105,30 @@ export class FoilDeck {
     const vh = typeof window !== "undefined" && window.innerHeight ? window.innerHeight : LOGICAL_HEIGHT;
     if (this.stageElement) {
       applyStageTransform(this.stageElement, vw, vh);
+    }
+
+    if (typeof window !== "undefined" && typeof window.addEventListener === "function") {
+      this.resizeHandler = () => {
+        if (this.stageElement) {
+          applyStageTransform(this.stageElement, window.innerWidth || LOGICAL_WIDTH, window.innerHeight || LOGICAL_HEIGHT);
+        }
+      };
+      this.keydownHandler = (event: KeyboardEvent) => {
+        if (event.key === "ArrowRight" || event.key === " " || event.key === "PageDown") {
+          event.preventDefault();
+          void this.next();
+        } else if (event.key === "ArrowLeft" || event.key === "PageUp") {
+          event.preventDefault();
+          void this.prev();
+        } else if (event.key === "f" || event.key === "F") {
+          const g = globalThis as unknown as { ipc?: { postMessage?: (msg: string) => void } };
+          if (g.ipc && typeof g.ipc.postMessage === "function") {
+            g.ipc.postMessage(JSON.stringify({ type: "toggle_fullscreen" }));
+          }
+        }
+      };
+      window.addEventListener("resize", this.resizeHandler);
+      window.addEventListener("keydown", this.keydownHandler);
     }
 
     this.mounted = true;
@@ -211,6 +237,16 @@ export class FoilDeck {
   }
 
   async destroy(): Promise<void> {
+    if (typeof window !== "undefined" && typeof window.removeEventListener === "function") {
+      if (this.resizeHandler) {
+        window.removeEventListener("resize", this.resizeHandler);
+        this.resizeHandler = null;
+      }
+      if (this.keydownHandler) {
+        window.removeEventListener("keydown", this.keydownHandler);
+        this.keydownHandler = null;
+      }
+    }
     const container = this.stageElement ?? this.rootElement;
     if (this.activeSlideDef && this.activeSlideDef.onLeave) {
       await this.activeSlideDef.onLeave(container);
