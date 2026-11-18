@@ -120,11 +120,11 @@ export class FoilDeck {
         } else if (event.key === "ArrowLeft" || event.key === "PageUp") {
           event.preventDefault();
           void this.prev();
-        } else if (event.key === "f" || event.key === "F") {
-          const g = globalThis as unknown as { ipc?: { postMessage?: (msg: string) => void } };
-          if (g.ipc && typeof g.ipc.postMessage === "function") {
-            g.ipc.postMessage(JSON.stringify({ type: "toggle_fullscreen" }));
-          }
+        } else if (event.key === "F11" || event.key === "f" || event.key === "F") {
+          event.preventDefault();
+          this.toggleFullscreen();
+        } else if (event.key === "Escape") {
+          this.exitFullscreenIfBrowser();
         }
       };
       window.addEventListener("resize", this.resizeHandler);
@@ -226,6 +226,29 @@ export class FoilDeck {
   openPresenterView(): void {
     const entry = this.manifest.slides[this.slideIndex];
     this.presenterBridge.sync(this.slideIndex, this.stepIndex, entry?.speakerNotes);
+  }
+
+  toggleFullscreen(): void {
+    const g = globalThis as unknown as { ipc?: { postMessage?: (msg: string) => void } };
+    if (g.ipc && typeof g.ipc.postMessage === "function") {
+      g.ipc.postMessage(JSON.stringify({ type: "toggle_fullscreen" }));
+      return;
+    }
+    const doc = this.rootElement.ownerDocument;
+    if (doc && typeof doc.documentElement?.requestFullscreen === "function") {
+      if (!doc.fullscreenElement) {
+        void doc.documentElement.requestFullscreen().catch(() => {});
+      } else if (typeof doc.exitFullscreen === "function") {
+        void doc.exitFullscreen().catch(() => {});
+      }
+    }
+  }
+
+  private exitFullscreenIfBrowser(): void {
+    const doc = this.rootElement.ownerDocument;
+    if (doc && doc.fullscreenElement && typeof doc.exitFullscreen === "function") {
+      void doc.exitFullscreen().catch(() => {});
+    }
   }
 
   getState(): { slideIndex: number; stepIndex: number; mounted: boolean } {

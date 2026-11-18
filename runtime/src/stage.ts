@@ -23,6 +23,7 @@ export function applyStageTransform(
   const scale = computeProportionalScale(viewportWidth, viewportHeight, LOGICAL_WIDTH, LOGICAL_HEIGHT);
   stageElement.style.width = `${LOGICAL_WIDTH}px`;
   stageElement.style.height = `${LOGICAL_HEIGHT}px`;
+  stageElement.style.flexShrink = "0";
   stageElement.style.position = "relative";
   stageElement.style.overflow = "hidden";
   stageElement.style.transformOrigin = "center center";
