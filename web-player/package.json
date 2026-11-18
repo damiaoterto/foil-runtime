@@ -9,6 +9,9 @@
     "build": "vite build",
     "test": "bun test"
   },
+  "files": [
+    "dist"
+  ],
   "dependencies": {
     "@foil-engine/runtime": "workspace:*",
     "fflate": "^0.8.2"
