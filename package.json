@@ -1,0 +1,11 @@
+{
+  "name": "foil-packages",
+  "private": true,
+  "workspaces": [
+    "runtime",
+    "web-player"
+  ],
+  "scripts": {
+    "test": "bun test"
+  }
+}
