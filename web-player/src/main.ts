@@ -1,4 +1,4 @@
-import { PresenterBridge, type PresenterSyncPayload } from "@foil/runtime";
+import { PresenterBridge, type PresenterSyncPayload } from "@foil-engine/runtime";
 import { unpackFoilArchiveInBrowser, type UnpackedWebDeck } from "./loader.ts";
 
 export {

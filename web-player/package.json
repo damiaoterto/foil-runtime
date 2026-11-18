@@ -1,6 +1,6 @@
 {
-  "name": "@foil/web-player",
-  "version": "0.1.0",
+  "name": "@foil-engine/web-player",
+  "version": "0.1.1",
   "type": "module",
   "main": "./src/main.ts",
   "types": "./src/main.ts",
@@ -10,7 +10,7 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@foil/runtime": "workspace:*",
+    "@foil-engine/runtime": "workspace:*",
     "fflate": "^0.8.2"
   },
   "devDependencies": {

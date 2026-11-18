@@ -6,14 +6,14 @@
       "name": "foil-packages",
     },
     "runtime": {
-      "name": "@foil/runtime",
+      "name": "@foil-engine/runtime",
       "version": "0.1.0",
     },
     "web-player": {
-      "name": "@foil/web-player",
+      "name": "@foil-engine/web-player",
       "version": "0.1.0",
       "dependencies": {
-        "@foil/runtime": "workspace:*",
+        "@foil-engine/runtime": "workspace:*",
         "fflate": "^0.8.2",
       },
       "devDependencies": {
@@ -74,9 +74,9 @@
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.25.12", "", { "os": "win32", "cpu": "x64" }, "sha512-alJC0uCZpTFrSL0CCDjcgleBXPnCrEAhTBILpeAp7M/OFgoqtAetfBzX0xM00MUsVVPpVjlPuMbREqnZCXaTnA=="],
 
-    "@foil/runtime": ["@foil/runtime@workspace:runtime"],
+    "@foil-engine/runtime": ["@foil-engine/runtime@workspace:runtime"],
 
-    "@foil/web-player": ["@foil/web-player@workspace:web-player"],
+    "@foil-engine/web-player": ["@foil-engine/web-player@workspace:web-player"],
 
     "@rollup/rollup-android-arm-eabi": ["@rollup/rollup-android-arm-eabi@4.68.7", "", { "os": "android", "cpu": "arm" }, "sha512-ZL7MgOeMUiBum1bjzzyBotE3DuHVz+UUxcDVlLL7gpdhDM4RpjG4bZOIly7ensIcXw9jhWl7HTIIQ9KsgjykGQ=="],
 

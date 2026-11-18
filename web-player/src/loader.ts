@@ -2,7 +2,7 @@ import {
   getInlineRuntimeLockdownScript,
   type DeckManifest,
   type IntegrityManifest
-} from "@foil/runtime";
+} from "@foil-engine/runtime";
 import { strFromU8, unzipSync } from "fflate";
 
 export const MAX_ARCHIVE_FILES = 1000;

@@ -43,7 +43,7 @@ function createMockElement(bounds = { top: 0, left: 0, right: 1920, bottom: 1080
   return mock as unknown as HTMLElement;
 }
 
-describe("@foil/runtime", () => {
+describe("@foil-engine/runtime", () => {
   test("computeProportionalScale maintains 16:9 1920x1080 aspect ratio without overflow", () => {
     expect(computeProportionalScale(1920, 1080)).toBe(1);
     expect(computeProportionalScale(960, 540)).toBe(0.5);

@@ -31,7 +31,7 @@ async function buildSignedTestFoilBuffer(
   return zipSync(zipInput);
 }
 
-describe("@foil/web-player", () => {
+describe("@foil-engine/web-player", () => {
   test("unpacks valid .foil archive, verifies SHA-256 integrity, and mounts in opaque sandbox=allow-scripts iframe", async () => {
     const indexHtml = strToU8("<!doctype html><html><head></head><body><h1>Slide</h1><script src=\"./app.js\"></script></body></html>");
     const appJs = strToU8("console.log('ready');");
