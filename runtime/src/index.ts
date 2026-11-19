@@ -157,7 +157,7 @@ export class FoilDeck {
     }
 
     this.slideIndex = clampedSlide;
-    const maxSteps = nextDef.steps ?? entry.steps ?? 0;
+    const maxSteps = this.getMaxSteps(nextDef, entry);
     this.stepIndex = Math.max(0, Math.min(stepIndex, maxSteps));
     this.activeSlideDef = nextDef;
 
@@ -186,7 +186,7 @@ export class FoilDeck {
       return;
     }
     const currentDef = this.activeSlideDef ?? this.slides[entry.file] ?? this.slides[entry.id];
-    const maxSteps = currentDef?.steps ?? entry.steps ?? 0;
+    const maxSteps = this.getMaxSteps(currentDef, entry);
     const container = this.stageElement ?? this.rootElement;
 
     if (this.stepIndex < maxSteps) {
@@ -213,9 +213,16 @@ export class FoilDeck {
       const prevIndex = this.slideIndex - 1;
       const prevEntry = this.manifest.slides[prevIndex];
       const prevDef = prevEntry ? (this.slides[prevEntry.file] ?? this.slides[prevEntry.id]) : undefined;
-      const prevSteps = prevDef?.steps ?? prevEntry?.steps ?? 0;
+      const prevSteps = this.getMaxSteps(prevDef, prevEntry);
       await this.goTo(prevIndex, prevSteps);
     }
+  }
+
+  private getMaxSteps(def: SlideDefinition | undefined, entry: SlideEntry | undefined): number {
+    if (!def?.onStep) {
+      return 0;
+    }
+    return Math.max(0, def.steps ?? entry?.steps ?? 0);
   }
 
   inspectCurrentSlide(): SlideDiagnostics {

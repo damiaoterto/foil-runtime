@@ -161,4 +161,35 @@ describe("@foil-engine/runtime", () => {
     expect(overflows[0]?.bounds.right).toBe(2150);
     expect(overflows[0]?.bounds.bottom).toBe(1120);
   });
+
+  test("FoilDeck skips steps when slide defines no onStep hook", async () => {
+    delete (globalThis as Record<string, unknown>).__FOIL_HMR_STATE__;
+
+    const manifest: DeckManifest = {
+      title: "No OnStep Test",
+      aspectRatio: "16:9",
+      width: 1920,
+      height: 1080,
+      theme: "default",
+      slides: [
+        { id: "s1", file: "src/slides/01.js", steps: 2 },
+        { id: "s2", file: "src/slides/02.js", steps: 0 }
+      ]
+    };
+
+    const slides: Record<string, SlideDefinition> = {
+      "src/slides/01.js": { html: "<section>Slide 1</section>" },
+      "src/slides/02.js": { html: "<section>Slide 2</section>" }
+    };
+
+    const deck = new FoilDeck(manifest, slides, createMockElement());
+    await deck.mount();
+    expect(deck.getState().slideIndex).toBe(0);
+
+    await deck.next();
+    expect(deck.getState().slideIndex).toBe(1);
+    expect(deck.getState().stepIndex).toBe(0);
+
+    await deck.destroy();
+  });
 });
