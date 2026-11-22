@@ -4,6 +4,7 @@ import {
   detectSlideOverflows,
   enableRuntimeLockdown,
   FoilDeck,
+  PlayerHud,
   type DeckManifest,
   type SlideDefinition
 } from "../src/index.ts";
@@ -191,5 +192,92 @@ describe("@foil-engine/runtime", () => {
     expect(deck.getState().stepIndex).toBe(0);
 
     await deck.destroy();
+  });
+
+  test("PlayerHud mounts controls, fires prev/next, updates counter, toggles laser, and cleans up", () => {
+    const appended: Array<Record<string, unknown>> = [];
+    const makeNode = (tag: string) => {
+      const listeners: Record<string, Array<() => void>> = {};
+      const classes = new Set<string>();
+      const node: Record<string, unknown> = {
+        tagName: tag.toUpperCase(),
+        className: "",
+        textContent: "",
+        style: {} as Record<string, string>,
+        children: [] as Array<Record<string, unknown>>,
+        classList: {
+          toggle(cls: string, force?: boolean) {
+            const next = force ?? !classes.has(cls);
+            if (next) classes.add(cls);
+            else classes.delete(cls);
+            return next;
+          },
+          contains(cls: string) {
+            return classes.has(cls);
+          }
+        },
+        setAttribute() {},
+        appendChild(child: Record<string, unknown>) {
+          (node.children as Array<Record<string, unknown>>).push(child);
+          return child;
+        },
+        addEventListener(evt: string, fn: () => void) {
+          listeners[evt] = listeners[evt] ?? [];
+          listeners[evt].push(fn);
+        },
+        click() {
+          for (const fn of listeners["click"] ?? []) fn();
+        },
+        remove() {
+          node.removed = true;
+        }
+      };
+      return node;
+    };
+
+    const root = {
+      ownerDocument: {
+        createElement(tag: string) {
+          return makeNode(tag);
+        }
+      },
+      appendChild(child: Record<string, unknown>) {
+        appended.push(child);
+        return child;
+      }
+    } as unknown as HTMLElement;
+
+    let prevCalls = 0;
+    let nextCalls = 0;
+    const hud = new PlayerHud();
+    hud.mount(root, {
+      onPrev: () => {
+        prevCalls += 1;
+      },
+      onNext: () => {
+        nextCalls += 1;
+      }
+    });
+
+    expect(appended.length).toBe(3);
+    const hudEl = appended[1]!;
+    const children = hudEl.children as Array<Record<string, unknown> & { click?: () => void }>;
+    children[0]!.click?.();
+    children[2]!.click?.();
+    expect(prevCalls).toBe(1);
+    expect(nextCalls).toBe(1);
+
+    hud.updateCounter(2, 8);
+    expect(children[1]!.textContent).toBe("3 / 8");
+
+    expect(hud.toggleLaser()).toBe(true);
+    expect((appended[2]!.style as Record<string, string>).display).toBe("block");
+    expect(hud.toggleLaser()).toBe(false);
+    expect((appended[2]!.style as Record<string, string>).display).toBe("none");
+
+    hud.destroy();
+    expect(appended[0]!.removed).toBe(true);
+    expect(appended[1]!.removed).toBe(true);
+    expect(appended[2]!.removed).toBe(true);
   });
 });

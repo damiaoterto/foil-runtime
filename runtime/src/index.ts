@@ -1,4 +1,5 @@
 import { collectDiagnostics, detectBrokenAssets, detectSlideOverflows } from "./diagnostics.ts";
+import { canRecordPresentation, PlayerHud, type PlayerHudCallbacks } from "./hud.ts";
 import { PresenterBridge, type PresenterSyncPayload } from "./presenter.ts";
 import { createLockedDownThrower, enableRuntimeLockdown, getInlineRuntimeLockdownScript } from "./security.ts";
 import { applyStageTransform, computeProportionalScale, LOGICAL_HEIGHT, LOGICAL_WIDTH } from "./stage.ts";
@@ -15,6 +16,7 @@ import type {
 
 export {
   applyStageTransform,
+  canRecordPresentation,
   collectDiagnostics,
   computeProportionalScale,
   createLockedDownThrower,
@@ -24,6 +26,7 @@ export {
   getInlineRuntimeLockdownScript,
   LOGICAL_HEIGHT,
   LOGICAL_WIDTH,
+  PlayerHud,
   PresenterBridge
 };
 
@@ -32,6 +35,7 @@ export type {
   FoilDeckOptions,
   InspectSlideResult,
   IntegrityManifest,
+  PlayerHudCallbacks,
   PresenterSyncPayload,
   SlideDefinition,
   SlideDiagnostics,
@@ -52,6 +56,7 @@ export class FoilDeck {
   private readonly rootElement: HTMLElement;
   private readonly options: FoilDeckOptions;
   private readonly presenterBridge: PresenterBridge;
+  private readonly hud: PlayerHud;
   private readonly consoleErrors: string[] = [];
   private stageElement: HTMLElement | null = null;
   private styleElement: HTMLStyleElement | null = null;
@@ -73,6 +78,7 @@ export class FoilDeck {
     this.rootElement = rootElement;
     this.options = options;
     this.presenterBridge = new PresenterBridge();
+    this.hud = new PlayerHud();
 
     const store = globalThis as unknown as HmrStateStore;
     if (store.__FOIL_HMR_STATE__) {
@@ -95,6 +101,14 @@ export class FoilDeck {
       this.rootElement.innerHTML = "";
       this.rootElement.appendChild(style);
       this.rootElement.appendChild(stage);
+      this.hud.mount(this.rootElement, {
+        onPrev: () => {
+          void this.prev();
+        },
+        onNext: () => {
+          void this.next();
+        }
+      });
       this.stageElement = stage;
       this.styleElement = style;
     } else {
@@ -123,6 +137,9 @@ export class FoilDeck {
         } else if (event.key === "F11" || event.key === "f" || event.key === "F") {
           event.preventDefault();
           this.toggleFullscreen();
+        } else if (event.key === "l" || event.key === "L") {
+          event.preventDefault();
+          this.hud.toggleLaser();
         } else if (event.key === "Escape") {
           this.exitFullscreenIfBrowser();
         }
@@ -177,6 +194,7 @@ export class FoilDeck {
     }
 
     this.persistHmrState();
+    this.hud.updateCounter(this.slideIndex, totalSlides);
     this.presenterBridge.sync(this.slideIndex, this.stepIndex, entry.speakerNotes);
   }
 
@@ -281,6 +299,7 @@ export class FoilDeck {
     if (this.activeSlideDef && this.activeSlideDef.onLeave) {
       await this.activeSlideDef.onLeave(container);
     }
+    this.hud.destroy();
     this.presenterBridge.close();
     this.mounted = false;
   }
